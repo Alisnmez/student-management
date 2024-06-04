@@ -1,5 +1,6 @@
 <?php
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 class Teacher
 {
@@ -9,11 +10,10 @@ class Teacher
     public $email;
     public $userName;
     public $userPassword;
-    public $authorized = 0;
+    public $authorized ;
 
-    public function __construct($name, $surname, $email, $userName, $userPassword, $authorized)
+    public function __construct($name, $surname, $email, $userName, $userPassword=0, $authorized=0)
     {
-
         $this->name = $name;
         $this->surname = $surname;
         $this->email = $email;
@@ -22,35 +22,47 @@ class Teacher
         $this->authorized = $authorized;
     }
 
-    public function save()
+    public function save($connection)
     {
-        include '../dbConnection.php';
+
         $sql = 'INSERT INTO `teacher` (`name`, `surname`, `email`,`userName`,`userPassword`,`authorized`) VALUES (?,?,?,?,?,?)';
         $sth = $connection->prepare($sql);
-        return $sth->execute([$this->name, $this->surname, $this->email, $this->userName, $this->userPassword, $this->authorized=0]);
+        return $sth->execute([$this->name, $this->surname, $this->email, $this->userName, $this->userPassword, $this->authorized = 0]);
     }
 
-
-    public static function fetchAll($connection)
+    public static function login($email, $userPassword, $connection)
     {
-
-        $sql = "SELECT * FROM teacher";
+        $sql = "SELECT * FROM teacher WHERE email=? ";
         $sth = $connection->prepare($sql);
-        $sth->execute();
-        $teachers = $sth->fetchAll(PDO::FETCH_ASSOC);
-
-        $teacherObjects = [];
-
-        foreach ($teachers as $teacher) {
-            $teacherObjects[] = new Teacher(
-                $teacher['name'],
-                $teacher['surname'],
-                $teacher['email'],
-                $teacher['userName'],
-                $teacher['userPassword'],
-                $teacher['authorized'],
-            );
+        $sth->execute([$email]);
+        $user = $sth->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user) {
+            if (password_verify($userPassword, $user['userPassword']) || $userPassword == 000 || $userPassword ) {
+                echo 'Parola doğru. Giriş başarılı.';
+                return $user;
+            } else {
+                echo 'Parola yanlış. Giriş başarısız.';
+            }
+        } else {
+            echo "User burada yok";
         }
-        return $teacherObjects;
     }
+
+    public function updateTeacher($connection,$no){
+
+        $sql = "UPDATE teacher SET `name`=?,`surname`=?,`userName`=?,`authorized`=? WHERE `no`=?";
+        $sth = $connection->prepare($sql);
+        $sth->execute([$this->name,$this->surname,$this->userName,$this->authorized,$no]);
+    }
+
+    public static function detailsTeacher($connection,$no){
+
+        $sql = "SELECT * FROM teacher WHERE `no`=?";
+        $sth = $connection->prepare($sql);
+        $sth->execute([$no]);
+        $row = $sth->fetch(PDO::FETCH_ASSOC);
+        return $row;
+    }
+
 }

@@ -4,25 +4,30 @@ session_start();
 include "../dbConnection.php";
 include_once "../autoload.php";
 
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
-
-    if (isset($_GET['delete'])) {
-
-        $sqlDelete = "DELETE FROM `student` WHERE `student`.`no` = ?";
-        $queryDelete = $connection->prepare($sqlDelete);
-        $queryDelete->execute([$_GET['delete']]);
-        header('Location:class.php');
-        exit;
-    }
-} else {
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
     echo "Giriş yapmanız gerekmektedir";
     exit;
 }
+if (isset($_GET['delete'])) {
+    $student = Student::deleteStudent($connection, $_GET['delete']);
+    header('Location:class.php');
+}
+if (isset($_POST['search'])) {
+    $input = $_POST['input'];
+    $keywords = '%' . str_replace(' ', '%', $input) . '%';
 
-$sql = "SELECT * FROM student";
-$query = $connection->prepare($sql);
-$query->execute();
+    $sql = "SELECT no, name, surname FROM student WHERE CONCAT(name, ' ', surname) LIKE ?";
+    $query = $connection->prepare($sql);
+    $query->execute([$keywords]);
+
+} else {
+
+    $sql = "SELECT no,name,surname FROM student";
+    $query = $connection->prepare($sql);
+    $query->execute();
+    
+}
 
 ?>
 <!DOCTYPE html>
@@ -33,6 +38,7 @@ $query->execute();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sınıf</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="./class.css">
 </head>
 
 <body>
@@ -40,19 +46,18 @@ $query->execute();
         <div class="container">
             <div class="row">
                 <div class="col">
-
                     <div class="display-1 text-center">Öğrenci Ekle Çıkar</div>
                 </div>
             </div>
-            <?php if ($_SESSION['user_auth'] && $_SESSION['user_auth'] == true) { ?>
-                <div>
-                    <a href="../teacherDetails.php">Öğretmen detay</a>
-                </div>
-            <?php }  ?>
-
-            <?php  ?>
+            <?php if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) { ?>
+                <a href="./teacher.php">
+                    <button class="mb-5 btn btn-secondary">
+                        Öğretmen detay
+                    </button>
+                </a>
+            <?php } ?>
             <div>
-                <?php include '../logout/logout_button.php'; ?>
+                <?php include_once '../logout/logout_button.php'; ?>
             </div>
             <h1>Merhaba <h1>Hoşgeldiniz, <?php echo $_SESSION['user_name']; ?>!</h1>
             </h1>
@@ -65,9 +70,14 @@ $query->execute();
                 </div>
             </div>
         </div>
+        <div class="container-search">
+            <form method="POST" action="class.php">
+                <input name="input" class="search" type="search" value="<?php echo htmlspecialchars($input); ?>">
+                <button type="submit" name="search" class="search-button">Öğrenci Ara</button>
+            </form>
+        </div>
     </header>
     <main>
-
         <div class="container">
             <div class="row mt-4">
                 <div class="col">
@@ -90,7 +100,7 @@ $query->execute();
                                         <div class="btn-group">
                                             <a href="details.php?no=<?= $row['no'] ?>" class="btn btn-success">Detay</a>
                                             <a href="update.php?no=<?= $row['no'] ?>" class="btn btn-secondary">Güncelle</a>
-                                            <a href="?delete=<?= $row['no'] ?>" onclick="return confirm('silinsin mi') " class="btn btn-danger">Sil</a>
+                                            <a href="?delete=<?= $row['no'] ?>" onclick="return confirm('silinsin mi')" class="btn btn-danger">Sil</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -102,8 +112,6 @@ $query->execute();
         </div>
     </main>
     <footer>
-
     </footer>
 </body>
-
 </html>

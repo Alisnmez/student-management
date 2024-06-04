@@ -1,28 +1,23 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 
 include "dbConnection.php";
+include "./autoload.php";
 
 if (isset($_POST['loginButton'])) {
-  
+
   $uEmail = $_POST['uEmail'];
   $uPassword = $_POST['uPassword'];
-  $user_name = $_POST['user_name'];
 
-
-
-  $sql = "SELECT * FROM teacher WHERE email=? AND userPassword=? AND userName=?";
-  $sth = $connection->prepare($sql);
-  $sth->execute([$uEmail, $uPassword, $user_name]);
-  $result = $sth->fetch(PDO::FETCH_ASSOC);
+  $result = Teacher::login($uEmail, $uPassword, $connection);
 
   if ($result) {
-
     $_SESSION['loggedin'] = true;
     $_SESSION['user_name'] = $result['userName'];
     $_SESSION['user_auth'] = $result['authorized'];
-
-
     header("Location:./pages/class.php");
     exit;
   } else {
@@ -50,22 +45,13 @@ if (isset($_POST['loginButton'])) {
           <div class="col-12 col-md-8 col-lg-6 col-xl-5">
             <div class="card bg-dark text-white" style="border-radius: 1rem;">
               <div class="card-body p-5 text-center">
-
                 <div class="mb-md-5 mt-md-4 pb-5">
-
                   <h2 class="fw-bold mb-2 ">Giriş Yap</h2>
                   <p class="text-white-50 mb-5">Lütfen e-posta ve şifrenizi giriniz!</p>
-
                   <div data-mdb-input-init class="form-outline form-white mb-4">
                     <input name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" />
                     <label class="form-label" for="typeEmailX">E-posta</label>
                   </div>
-
-                  <div data-mdb-input-init class="form-outline form-white mb-4">
-                    <input name="user_name" type="text" id="typeUserName" class="form-control form-control-lg" placeholder="Kullanıcı adı" />
-                    <label class="form-label" for="typeUserName">Kullanıcı Adı</label>
-                  </div>
-
                   <div data-mdb-input-init class="form-outline form-white mb-4">
                     <input name="uPassword" type="password" id="typePasswordX" class="form-control form-control-lg" placeholder="Şifrenizi Giriniz" />
                     <label class="form-label" for="typePasswordX">Şifre</label>
@@ -76,7 +62,6 @@ if (isset($_POST['loginButton'])) {
                   <p class="mb-0">Hesabınız yok mu? <a href="./register/register.php" class="text-white-50 fw-bold">Kayıt ol!</a>
                   </p>
                 </div>
-
               </div>
             </div>
           </div>
