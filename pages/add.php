@@ -1,42 +1,35 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 session_start();
-include_once '../autoload.php';
+include_once "../dbConnection.php";
+include '../autoload.php';
 
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
-
-    if (isset($_POST["save"])) {
-        include "../dbConnection.php";
-
-        $student = new Student(
-
-
-            $_POST['name'],
-            $_POST['surname'],
-            $_POST['class'],
-            $_POST['birth'],
-            $_POST['gender'],
-
-
-        );
-
-        $student->addStudent($connection);
-        if ($student->addStudent($connection)) {
-            header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
-            exit;
-        } else {
-            $errorInfo = $sth->errorInfo();
-            echo $errorInfo;
-        }
-    }
-
-    if (isset($_GET['success'])) {
-        $message = "Kayıt başarıyla eklendi.";
-    }
-} else {
-    echo "Giriş yapmanız gerekmektedir.";
+if (!isset($_SESSION['loggedin']) && $_SESSION['loggedin'] != true) {
+    header("Location:../index.php");
     exit;
 }
+$db = new Database();
+$db->startConnection($config);
+if (isset($_GET['success'])) {
+    $message = "Kayıt başarıyla eklendi.";
+}
+if (isset($_POST["save"])) {
+    $student = new Student();
+    $name = $_POST['name'];
+    $surname = $_POST['surname'];
+    $class = $_POST['class'];
+    $date = $_POST['birth'];
+    $gender = $_POST['gender'];
+    $query = $student->addStudent($db, $name, $surname, $class, $date, $gender);
+    if (!$query) {
+        echo "Öğrenci eklenemedi";
+        exit;
+    }
+    header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -71,7 +64,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
         <div class="container">
             <?php if (!empty($message)) : ?>
                 <div class="alert alert-success">
-                    <?= htmlspecialchars($message) ?>
+                    <?= $message ?>
                 </div>
             <?php endif; ?>
             <form action="" method="post" class="row">
@@ -113,38 +106,3 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
 
 </html>
 <?php
-
-/*
-session_start();
-
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
-
-    if (isset($_POST["save"])) {
-        include "../dbConnection.php";
-
-        try {
-            $sql = "INSERT INTO `student` (`name`, `surname`, `class`, `date`, `gender`) VALUES (?, ?, ?, ?, ?)";
-            $sth = $connection->prepare($sql);
-            $result = $sth->execute([$_POST["name"], $_POST["surname"], $_POST["class"], $_POST["birth"], $_POST["gender"]]);
-
-            if ($result) {
-                header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
-                exit;
-            } else {
-                $errorInfo = $sth->errorInfo();
-                echo $errorInfo;
-            }
-        } catch (PDOException $e) {
-           echo "Veritabanı hatası: " . $e->getMessage();
-        }
-    }
-
-    if (isset($_GET['success'])) {
-        $message = "Kayıt başarıyla eklendi.";
-    }
-} else {
-    echo "Giriş yapmanız gerekmektedir.";
-    exit;
-}
-?>
-*/

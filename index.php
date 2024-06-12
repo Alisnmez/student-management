@@ -6,22 +6,28 @@ session_start();
 
 include "dbConnection.php";
 include "./autoload.php";
+include "./config.php";
 
+$error = '';
 if (isset($_POST['loginButton'])) {
 
   $uEmail = $_POST['uEmail'];
   $uPassword = $_POST['uPassword'];
 
-  $result = Teacher::login($uEmail, $uPassword, $connection);
+
+  $db = new Database();
+  $db->startConnection($config);
+  $result = Teacher::login($uEmail,$uPassword,$db);
 
   if ($result) {
     $_SESSION['loggedin'] = true;
     $_SESSION['user_name'] = $result['userName'];
     $_SESSION['user_auth'] = $result['authorized'];
     header("Location:./pages/class.php");
+    $db->closeConnection();
     exit;
   } else {
-    echo '<div class="alert alert-danger" role="alert">Hatalı e-posta, şifre veya kullanıcı adı.</div>';
+   $error = 'E-posta veya şifre yanlış.';;
   }
 }
 ?>
@@ -48,13 +54,16 @@ if (isset($_POST['loginButton'])) {
                 <div class="mb-md-5 mt-md-4 pb-5">
                   <h2 class="fw-bold mb-2 ">Giriş Yap</h2>
                   <p class="text-white-50 mb-5">Lütfen e-posta ve şifrenizi giriniz!</p>
-                  <div data-mdb-input-init class="form-outline form-white mb-4">
-                    <input name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" />
+                  <?php if ($error) : ?>
+                    <?= $error; ?>
+                  <?php endif; ?>
+                  <div class="form-outline form-white mb-4">
                     <label class="form-label" for="typeEmailX">E-posta</label>
+                    <input name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" />
                   </div>
-                  <div data-mdb-input-init class="form-outline form-white mb-4">
-                    <input name="uPassword" type="password" id="typePasswordX" class="form-control form-control-lg" placeholder="Şifrenizi Giriniz" />
+                  <div class="form-outline form-white mb-4">
                     <label class="form-label" for="typePasswordX">Şifre</label>
+                    <input name="uPassword" type="password" id="typePasswordX" class="form-control form-control-lg" placeholder="Şifrenizi Giriniz" />
                   </div>
                   <button name="loginButton" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-light btn-lg px-5" type="submit">Giriş</button>
                 </div>

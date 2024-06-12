@@ -1,37 +1,39 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 session_start();
+
 include "../dbConnection.php";
 include_once "../autoload.php";
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
-    echo "Giriş yapmanız gerekmektedir";
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location:../index.php");
     exit;
 }
+$db = new Database();
+$db->startConnection($config);
 if (isset($_GET['delete'])) {
-    $student = Student::deleteStudent($connection, $_GET['delete']);
+    $query = $db->deleteDatas('student', $_GET['delete']);
     header('Location:class.php');
 }
+$input = '';
 if (isset($_POST['search'])) {
+
     $input = $_POST['input'];
     $keywords = '%' . str_replace(' ', '%', $input) . '%';
-
-    $sql = "SELECT no, name, surname FROM student WHERE CONCAT(name, ' ', surname) LIKE ?";
-    $query = $connection->prepare($sql);
+    $sql = "SELECT no, name, surname,class FROM student WHERE CONCAT(name, ' ', surname) LIKE ?";
+    $query = $db->startConnection($config)->prepare($sql);
     $query->execute([$keywords]);
-
 } else {
-
-    $sql = "SELECT no,name,surname FROM student";
-    $query = $connection->prepare($sql);
-    $query->execute();
-    
+    $query = $db->getDatas('student', ['no', 'name', 'surname', 'class']);
 }
+$db->closeConnection();
 
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 
 <head>
     <meta charset="UTF-8">
@@ -87,6 +89,7 @@ if (isset($_POST['search'])) {
                                 <th>NO</th>
                                 <th>Ad</th>
                                 <th>Soyad</th>
+                                <th>Sınıf</th>
                                 <th>İşlem</th>
                             </tr>
                         </thead>
@@ -96,11 +99,12 @@ if (isset($_POST['search'])) {
                                     <td><?= $row['no'] ?></td>
                                     <td><?= $row['name'] ?></td>
                                     <td><?= $row['surname'] ?></td>
+                                    <td><?= $row['class'] ?></td>
                                     <td>
                                         <div class="btn-group">
                                             <a href="details.php?no=<?= $row['no'] ?>" class="btn btn-success">Detay</a>
                                             <a href="update.php?no=<?= $row['no'] ?>" class="btn btn-secondary">Güncelle</a>
-                                            <a href="?delete=<?= $row['no'] ?>" onclick="return confirm('silinsin mi')" class="btn btn-danger">Sil</a>
+                                            <a href="?delete=<?= $row['no'] ?>" onclick="return confirm('Öğrenci silinsin mi')" class="btn btn-danger">Sil</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -114,4 +118,5 @@ if (isset($_POST['search'])) {
     <footer>
     </footer>
 </body>
+
 </html>

@@ -1,41 +1,40 @@
 <?php
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
-include "../autoload.php";
+include "../../dbConnection.php";
+include "../../autoload.php";
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location:../index.php");
+    header("Location:../../index.php");
     exit;
 }
-include "../dbConnection.php";
-$db = new Database();
-$db->startConnection($config);
-
-$row = $db->getDatas('student','*',['no=?'],[$_GET['no']])->fetch(PDO::FETCH_ASSOC);
-
-if (!$row) {
-    echo "Böyle bir öğrenci bulunamadı.";
-    exit;
-}
-
-$updateMessage = '';
-
-if (isset($_POST['update'])) {
-    $name = $_POST['name'];
-    $surname = $_POST['surname'];
-    $class = $_POST['class'];
-    $date = $_POST['date'];
-    $student = Student::updateStudent($db, $name, $surname, $class, $date, $_GET['no']);
-    if ($student) {
-        $updateMessage = "Öğrenci başarılı şekilde güncellendi.";
-    } else {
-        $updateMessage = "Güncelleme sırasında bir hata oluştu.";
+if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
+    if (isset($_POST['update'])) {
+        $teacher = new Teacher($_POST['name'], $_POST['surname'],null, $_POST['userName'], $_POST['authorized']);
+        $teacher->updateTeacher($connection, $_GET['no']);
+        header("Location:../teacher.php");
     }
+    $sql = "SELECT * FROM teacher WHERE no= ?";
+    $query = $connection->prepare($sql);
+    $query->execute(
+        [
+            $_GET['no']
+        ]
+    );
+    $row = $query->fetch(PDO::FETCH_ASSOC);
+       
+    if(!$row){
+        echo "Böyle bir Öğretmen bulunmamaktadır";
+        exit;
+    }
+}else{
+    echo "İşlem yapmak için yetkiniz bulunmamaktadır";
+    exit;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="tr">
@@ -50,14 +49,13 @@ if (isset($_POST['update'])) {
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <div class="display-1 text-center">Öğrenci Güncelle </div>
+                    <div class="display-1 text-center">Öğretmen Güncelle </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <div class="btn-group">
-                        <a href="class.php" class="btn btn-outline-primary">Sınıf</a>
-                        <a href="add.php" class="btn btn-outline-primary">Öğrenci Ekle</a>
+                        <a href="../teacher.php" class="btn btn-outline-primary">Öğretmen İşlemleri</a>
                     </div>
                 </div>
             </div>
@@ -65,12 +63,8 @@ if (isset($_POST['update'])) {
     </header>
     <main>
         <div class="container">
-            <?php if ($updateMessage): ?>
-                <div class="alert alert-info">
-                    <?= $updateMessage ?>
-                </div>
-            <?php endif; ?>
             <form action="" method="post" class="row">
+                <input type="hidden" name="no">
                 <div class="row mb-3">
                     <div class="col-6">
                         <label for="name" class="form-label">Ad</label>
@@ -81,21 +75,23 @@ if (isset($_POST['update'])) {
                         <input type="text" class="form-control" name="surname" value="<?= $row['surname'] ?>">
                     </div>
                     <div class="col-6">
-                        <label for="class" class="form-label">Sınıf</label>
-                        <input type="text" class="form-control" name="class" value="<?= $row['class'] ?>">
+                        <label for="userName" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" name="userName" value="<?= $row['userName'] ?>">
                     </div>
                     <div class="col-6">
-                        <label for="date" class="form-label">Doğum Tarihi</label>
-                        <input type="date" class="form-control" name="date" value="<?= $row['date'] ?>">
+                        <label for="authorized" class="form-label">Yetki</label>
+                        <input type="text" class="form-control" name="authorized" value="<?= $row['authorized'] ?>">
                     </div>
                 </div>
                 <button name="update" type="submit" class="btn btn-primary">
                     Güncelle
                 </button>
             </form>
+
         </div>
     </main>
     <footer>
     </footer>
 </body>
+
 </html>

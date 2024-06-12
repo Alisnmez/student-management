@@ -1,27 +1,29 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 session_start();
-include "../dbConnection.php";
 
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
-
-    $sql = "SELECT * FROM student WHERE no=?";
-    $query = $connection->prepare($sql);
-    $query->execute(
-        [
-            $_GET['no']
-        ]
-    );
-    $row = $query->fetch(PDO::FETCH_ASSOC);
-}
-else{
-    echo "Giriş yapmanız gerekmektedir.";
+include "../autoload.php";
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location:../index.php");
     exit;
 }
+include "../dbConnection.php";
+$db = new Database();
+$db->startConnection($config);
+
+$result = $db->getDatas('student', ['name', 'surname', 'class', 'gender', 'date'], ['no=?'], [$_GET['no']]);
+$row = $result->fetch(PDO::FETCH_ASSOC);
+if (!$row) {
+    echo "Böyle bir öğrenci bulunamadı.";
+    exit;
+}
+
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 
 <head>
     <meta charset="UTF-8">
@@ -35,7 +37,7 @@ else{
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <div class="display-1 text-center">Öğrenci Ekle Çıkar</div>
+                    <div class="display-1 text-center">Öğrenci Detayları</div>
                 </div>
             </div>
             <div class="row">
@@ -54,17 +56,12 @@ else{
                 <div class="col">
                     <div class="card">
                         <div class="card-body">
-
-                            <h5 class="card-title">
-                                <?= $row["name"] ?>
-                            </h5>
-                            <?php if($_SESSION['user_auth'] && $_SESSION['user_auth']=true) : ?>
-                            <h5>
-                            <?= $row["surname"] ?>
-                            </h5>
+                            <h5 class="card-title"><?= htmlspecialchars($row["name"]) ?></h5>
+                            <?php if ($_SESSION['user_auth'] && $_SESSION['user_auth'] == true) : ?>
+                                <h5><?= htmlspecialchars($row["surname"]) ?></h5>
                             <?php endif; ?>
-                            <h6 class="card-subtitle mb-2 text-body-secondary"><?= $row["class"] ?> <?= $row["gender"] ?></h6>
-                            <p class="card-text"> <?= $row["date"] ?></p>
+                            <h6 class="card-subtitle mb-2 text-body-secondary"><?= htmlspecialchars($row["class"]) ?> <?= htmlspecialchars($row["gender"]) ?></h6>
+                            <p class="card-text"><?= htmlspecialchars($row["date"]) ?></p>
                         </div>
                     </div>
                 </div>

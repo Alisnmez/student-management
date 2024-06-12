@@ -1,62 +1,47 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
 class Teacher
 {
 
-    public $name;
-    public $surname;
-    public $email;
-    public $userName;
-    public $userPassword;
-    public $authorized ;
-
-    public function __construct($name, $surname, $email, $userName, $userPassword=0, $authorized=0)
+    public function saveTeacher($name, $surname, $email, $userName, $userPassword, $db)
     {
-        $this->name = $name;
-        $this->surname = $surname;
-        $this->email = $email;
-        $this->userName = $userName;
-        $this->userPassword = $userPassword;
-        $this->authorized = $authorized;
+        $data = [
+            'name' => $name,
+            'surname' => $surname,
+            'email' => $email,
+            'userName' => $userName,
+            'userPassword' => $userPassword,
+            'authorized' => 0,
+
+        ];
+
+        return $db->save('teacher', $data);
     }
 
-    public function save($connection)
+    public static function login($email, $userPassword, $db)
     {
+        $columns = ['email', 'userPassword', 'userName', 'authorized'];
+        $conditions = ['email = ?', 'userPassword = ?'];
+        $params = [$email, $userPassword];
 
-        $sql = 'INSERT INTO `teacher` (`name`, `surname`, `email`,`userName`,`userPassword`,`authorized`) VALUES (?,?,?,?,?,?)';
-        $sth = $connection->prepare($sql);
-        return $sth->execute([$this->name, $this->surname, $this->email, $this->userName, $this->userPassword, $this->authorized = 0]);
-    }
+        $query = $db->getDatas('teacher', $columns, $conditions, $params);
+        $user = $query->fetch(PDO::FETCH_ASSOC);
 
-    public static function login($email, $userPassword, $connection)
-    {
-        $sql = "SELECT * FROM teacher WHERE email=? ";
-        $sth = $connection->prepare($sql);
-        $sth->execute([$email]);
-        $user = $sth->fetch(PDO::FETCH_ASSOC);
-        
-        if ($user) {
-            if (password_verify($userPassword, $user['userPassword']) || $userPassword == 000 || $userPassword ) {
-                echo 'Parola doğru. Giriş başarılı.';
-                return $user;
-            } else {
-                echo 'Parola yanlış. Giriş başarısız.';
-            }
+        if ($user && $user['userPassword'] === $userPassword) {
+            return $user;
         } else {
-            echo "User burada yok";
+            echo '<div class="alert alert-danger" role="alert">E-posta veya şifre yanlış.</div>';
+            return false;
         }
     }
 
-    public function updateTeacher($connection,$no){
-
-        $sql = "UPDATE teacher SET `name`=?,`surname`=?,`userName`=?,`authorized`=? WHERE `no`=?";
-        $sth = $connection->prepare($sql);
-        $sth->execute([$this->name,$this->surname,$this->userName,$this->authorized,$no]);
+    public static function updateTeacher($no, $data, $db)
+    {
     }
 
-    public static function detailsTeacher($connection,$no){
+    public static function detailsTeacher($connection, $no)
+    {
 
         $sql = "SELECT * FROM teacher WHERE `no`=?";
         $sth = $connection->prepare($sql);
@@ -65,4 +50,19 @@ class Teacher
         return $row;
     }
 
+    public static function deleteTeacher($connection, $no)
+    {
+        $sql = "DELETE FROM teacher WHERE `teacher`.`no`=?";
+        $sth = $connection->prepare($sql);
+        $sth->execute([$no]);
+        $result = $sth->execute([$no]);
+        return $result;
+    }
+
+    public static function updateAuth($connection, $no, $newAuth)
+    {
+        $sql = "UPDATE teacher SET `authorized`=$newAuth WHERE `no`=?";
+        $sth = $connection->prepare($sql);
+        $sth->execute([$no]);
+    }
 }
