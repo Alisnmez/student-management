@@ -5,16 +5,18 @@ ini_set('display_errors', 1);
 
 session_start();
 include "../autoload.php";
+include "../dbConnection.php";
+include "../functions.php";
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header("Location:../index.php");
     exit;
 }
-include "../dbConnection.php";
+
 $db = new Database();
 $db->startConnection($config);
 
-$row = $db->getDatas('student','*',['no=?'],[$_GET['no']])->fetch(PDO::FETCH_ASSOC);
+$row = $db->getDatas('student', '*', ['no=?'], [$_GET['no']])->fetch(PDO::FETCH_ASSOC);
 
 if (!$row) {
     echo "Böyle bir öğrenci bulunamadı.";
@@ -24,27 +26,37 @@ if (!$row) {
 $updateMessage = '';
 
 if (isset($_POST['update'])) {
-    $name = $_POST['name'];
-    $surname = $_POST['surname'];
-    $class = $_POST['class'];
+    $name = secure_data($_POST['name']);
+    $surname = secure_data($_POST['surname']);
+    $class = secure_data($_POST['class']);
     $date = $_POST['date'];
     $student = Student::updateStudent($db, $name, $surname, $class, $date, $_GET['no']);
-    if ($student) {
-        $updateMessage = "Öğrenci başarılı şekilde güncellendi.";
+
+    if (!validate_letter($name) || !validate_letter($surname)) {
+        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad sadece harf içermelidir.</div>';
+    } elseif (!validate_with_number($class)) {
+        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad sadece harf içermelidir.</div>';
     } else {
-        $updateMessage = "Güncelleme sırasında bir hata oluştu.";
+        $student = Student::updateStudent($db, $name, $surname, $class, $date, $_GET['no']);
+        if ($student) {
+            $updateMessage = "Öğrenci başarılı şekilde güncellendi.";
+        } else {
+            $updateMessage = "Güncelleme sırasında bir hata oluştu.";
+        }
     }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Güncelle</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
+
 <body>
     <header>
         <div class="container">
@@ -65,7 +77,7 @@ if (isset($_POST['update'])) {
     </header>
     <main>
         <div class="container">
-            <?php if ($updateMessage): ?>
+            <?php if ($updateMessage) : ?>
                 <div class="alert alert-info">
                     <?= $updateMessage ?>
                 </div>
@@ -98,4 +110,5 @@ if (isset($_POST['update'])) {
     <footer>
     </footer>
 </body>
+
 </html>

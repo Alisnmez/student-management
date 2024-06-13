@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 session_start();
 include_once "../dbConnection.php";
 include '../autoload.php';
+include "../functions.php";
 
 if (!isset($_SESSION['loggedin']) && $_SESSION['loggedin'] != true) {
     header("Location:../index.php");
@@ -15,19 +16,29 @@ $db->startConnection($config);
 if (isset($_GET['success'])) {
     $message = "Kayıt başarıyla eklendi.";
 }
+$error = '';
 if (isset($_POST["save"])) {
-    $student = new Student();
-    $name = $_POST['name'];
-    $surname = $_POST['surname'];
-    $class = $_POST['class'];
+
+    $name = secure_data($_POST['name']);
+    $surname = secure_data($_POST['surname']);
+    $class = secure_data($_POST['class']);
     $date = $_POST['birth'];
-    $gender = $_POST['gender'];
-    $query = $student->addStudent($db, $name, $surname, $class, $date, $gender);
-    if (!$query) {
-        echo "Öğrenci eklenemedi";
-        exit;
+    $gender = $_POST['gender'] ?? '';
+
+    if (empty($name) || empty($surname) || empty($class) || empty($date) || empty($gender)) {
+        $error = '<div class="alert alert-danger" role="alert">Lütfen tüm alanları doldurun.</div>';
+    }elseif (!validate_letter($name) || !validate_letter($surname)) {
+        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad sadece harf içermelidir.</div>';
+    }elseif(!validate_with_number($class)){
+        $error = '<div class="alert alert-danger" role="alert">Sınıf sadece sayı ve harf içermelidir.</div>';
+    } else {
+        $query = Student::addStudent($db, $name, $surname, $class, $date, $gender);
+        if (!$query) {
+            echo "Öğrenci eklenemedi";
+            exit;
+        }
+        header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
     }
-    header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
 }
 
 ?>
@@ -62,6 +73,7 @@ if (isset($_POST["save"])) {
     </header>
     <main>
         <div class="container">
+            <?= $error ?>
             <?php if (!empty($message)) : ?>
                 <div class="alert alert-success">
                     <?= $message ?>
@@ -87,10 +99,10 @@ if (isset($_POST["save"])) {
                     </div>
                     <div class="col-6 mt-3">
                         <label for="gender" class="form-label">Kız
-                            <input type="radio" name="gender" value="Kadın">
+                            <input type="radio" id="female" name="gender" value="Kadın">
                         </label>
                         <label for="gender" class="form-label">Erkek
-                            <input type="radio" name="gender" value="Erkek">
+                            <input type="radio" id="male" name="gender" value="Erkek">
                         </label>
                     </div>
                 </div>

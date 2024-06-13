@@ -6,6 +6,7 @@ session_start();
 
 include "../dbConnection.php";
 include_once "../autoload.php";
+include "../functions.php";
 
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
@@ -21,15 +22,16 @@ if (isset($_GET['delete'])) {
 $input = '';
 if (isset($_POST['search'])) {
 
-    $input = $_POST['input'];
+    $input = secure_data($_POST['input']);
     $keywords = '%' . str_replace(' ', '%', $input) . '%';
     $sql = "SELECT no, name, surname,class FROM student WHERE CONCAT(name, ' ', surname) LIKE ?";
     $query = $db->startConnection($config)->prepare($sql);
     $query->execute([$keywords]);
 } else {
     $query = $db->getDatas('student', ['no', 'name', 'surname', 'class']);
+    $db->closeConnection();
 }
-$db->closeConnection();
+
 
 ?>
 <!DOCTYPE html>

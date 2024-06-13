@@ -14,19 +14,12 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 $db = new Database();
 $db->startConnection($config);
 if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
-    if(isset($_GET['deleteTeacher'])){
-//$teacher = $db->getDatas('teacher',['name','surname','email','userName','authorized']);
-        if($teacher){
-            echo '<div class="alert alert-success" role="alert">Öğretmen başarıyla silindi.</div>';
-        }
-        else{
-            echo '<div class="alert alert-danger" role="alert">Silme işlemi sırasında bir hata oluştu.</div>';
-        }
+    if (isset($_GET['deleteTeacher'])) {
+        $teacher = $db->deleteDatas('teacher',$_GET['deleteTeacher']);
+        header("Location:./teacher.php");
     }
-
-    $query = $db->getDatas('teacher',['no','name','surname','email','userName','authorized']);
-
-}else{
+    $query = $db->getDatas('teacher', ['no', 'name', 'surname', 'email', 'userName', 'authorized']);
+} else {
     echo "Yetkiniz yok.";
     exit;
 }
@@ -34,12 +27,14 @@ if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
 
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Öğretmen Detay</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
+
 <body>
     <main>
         <div class="container">
@@ -75,7 +70,7 @@ if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
                                     <td><?= $row['surname'] ?></td>
                                     <td><?= $row['email'] ?></td>
                                     <td><?= $row['userName'] ?></td>
-                                    <td><?= $row['authorized']==1 ? 'Yönetici':'Öğretmen' ?></td>
+                                    <td><?= $row['authorized'] == 1 ? 'Yönetici' : 'Öğretmen' ?></td>
                                     <td>
                                         <dv class="btn-group">
                                             <a href="./teacherPages/teacherDetails.php?no=<?= $row['no'] ?>" class="btn btn-success">Detay</a>
@@ -93,4 +88,5 @@ if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
 
     </main>
 </body>
+
 </html>

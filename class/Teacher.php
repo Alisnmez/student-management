@@ -3,7 +3,6 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 class Teacher
 {
-
     public function saveTeacher($name, $surname, $email, $userName, $userPassword, $db)
     {
         $data = [
@@ -13,9 +12,7 @@ class Teacher
             'userName' => $userName,
             'userPassword' => $userPassword,
             'authorized' => 0,
-
         ];
-
         return $db->save('teacher', $data);
     }
 
@@ -36,18 +33,14 @@ class Teacher
         }
     }
 
-    public static function updateTeacher($no, $data, $db)
+    public static function updateTeacher($no, $name,$surname,$userName, $db)
     {
-    }
-
-    public static function detailsTeacher($connection, $no)
-    {
-
-        $sql = "SELECT * FROM teacher WHERE `no`=?";
-        $sth = $connection->prepare($sql);
-        $sth->execute([$no]);
-        $row = $sth->fetch(PDO::FETCH_ASSOC);
-        return $row;
+        $data = [
+            'name'=>$name,
+            'surname'=>$surname,
+            'userNAME'=>$userName
+        ];
+        return $db->updateDatas('teacher',$no,$data);
     }
 
     public static function deleteTeacher($connection, $no)
@@ -57,12 +50,5 @@ class Teacher
         $sth->execute([$no]);
         $result = $sth->execute([$no]);
         return $result;
-    }
-
-    public static function updateAuth($connection, $no, $newAuth)
-    {
-        $sql = "UPDATE teacher SET `authorized`=$newAuth WHERE `no`=?";
-        $sth = $connection->prepare($sql);
-        $sth->execute([$no]);
     }
 }

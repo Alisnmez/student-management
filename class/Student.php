@@ -4,7 +4,7 @@ class Student
 {
 
 
-    public function addStudent($db, $name, $surname, $class, $date, $gender)
+    public static function addStudent($db, $name, $surname, $class, $date, $gender)
     {  
         $data = [
             'name' => $name,

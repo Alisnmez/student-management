@@ -6,13 +6,12 @@ session_start();
 
 include "dbConnection.php";
 include "./autoload.php";
-include "./config.php";
-
+include "./functions.php";
 $error = '';
 if (isset($_POST['loginButton'])) {
 
-  $uEmail = $_POST['uEmail'];
-  $uPassword = $_POST['uPassword'];
+  $uEmail =secure_data($_POST['uEmail']) ;
+  $uPassword = secure_data(md5($_POST['uPassword']));
 
 
   $db = new Database();

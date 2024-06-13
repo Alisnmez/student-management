@@ -15,6 +15,7 @@ $db->startConnection($config);
 
 $result = $db->getDatas('student', ['name', 'surname', 'class', 'gender', 'date'], ['no=?'], [$_GET['no']]);
 $row = $result->fetch(PDO::FETCH_ASSOC);
+$db->closeConnection();
 if (!$row) {
     echo "Böyle bir öğrenci bulunamadı.";
     exit;
