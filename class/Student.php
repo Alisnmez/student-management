@@ -3,7 +3,6 @@
 class Student
 {
 
-
     public static function addStudent($db, $name, $surname, $class, $date, $gender)
     {  
         $data = [

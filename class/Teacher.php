@@ -16,31 +16,31 @@ class Teacher
         return $db->save('teacher', $data);
     }
 
-    public static function login($email, $userPassword, $db)
+    public static function login($email, $userPassword, $db,&$error)
     {
         $columns = ['email', 'userPassword', 'userName', 'authorized'];
         $conditions = ['email = ?', 'userPassword = ?'];
-        $params = [$email, $userPassword];
-
+        $params = [$email,$userPassword];
+        
         $query = $db->getDatas('teacher', $columns, $conditions, $params);
         $user = $query->fetch(PDO::FETCH_ASSOC);
-
+        $error = '';
         if ($user && $user['userPassword'] === $userPassword) {
             return $user;
         } else {
-            echo '<div class="alert alert-danger" role="alert">E-posta veya şifre yanlış.</div>';
+            $error = '<div class="alert alert-danger" role="alert">E-posta veya şifre hatalı.</div>';
             return false;
         }
     }
 
-    public static function updateTeacher($no, $name,$surname,$userName, $db)
+    public static function updateTeacher($no, $name, $surname, $userName, $db)
     {
         $data = [
-            'name'=>$name,
-            'surname'=>$surname,
-            'userNAME'=>$userName
+            'name' => $name,
+            'surname' => $surname,
+            'userNAME' => $userName
         ];
-        return $db->updateDatas('teacher',$no,$data);
+        return $db->updateDatas('teacher', $no, $data);
     }
 
     public static function deleteTeacher($connection, $no)

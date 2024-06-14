@@ -16,18 +16,16 @@ if (isset($_POST['register'])) {
     $surname = secure_data($_POST['surname']);
     $email = filter_var(secure_data($_POST['email']), FILTER_SANITIZE_EMAIL);
     $userName = secure_data($_POST['userName']);
-    $userPassword = secure_data($_POST['userPassword']);
+    $userPassword = secure_data(md5($_POST['userPassword']));
 
-    $userPassword = md5($userPassword);
-
-    if(empty($name) || empty($surname) || empty($email) || empty($userName)){
+    if (empty($name) || empty($surname) || empty($email) || empty($userName) || empty($userPassword)) {
         $error = '<div class="alert alert-danger" role="alert">Lütfen tüm alanları doldurun.</div>';
-    }elseif (strlen($userPassword) < 6 || !validate_with_number($userPassword)) {
-        $error = '<div class="alert alert-danger" role="alert">Şifre en az 6 karakter olmalıdır ve sadece harf ve sayı içermelidir.</div>';
+    } elseif (strlen($userPassword) < 6 || !validate_with_number($userPassword)) {
+        $error = '<div class="alert alert-danger" role="alert">Şifre en az 6 karakter olmalıdır ve yalnızca harf ve sayı içermelidir.</div>';
     } elseif (!validate_letter($name) || !validate_letter($surname)) {
-        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad sadece harf içermelidir.</div>';
+        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad yalnızca harf içermelidir.</div>';
     } elseif (!validate_with_number($userName)) {
-        $error = '<div class="alert alert-danger" role="alert">Kullanıcı adı sadece harf ve sayı içermelidir.</div>';
+        $error = '<div class="alert alert-danger" role="alert">Kullanıcı adı yalnızca harf ve sayı içermelidir.</div>';
     } else {
 
         $teacher = new Teacher($db);
@@ -39,7 +37,6 @@ if (isset($_POST['register'])) {
             $userPassword,
             $db
         );
-
         if ($result) {
             echo '<div class="alert alert-success" role="alert">Kayıt başarıyla eklendi.</div>';
             echo '<meta http-equiv="refresh" content="2;url=' . $_SERVER['PHP_SELF'] . '">';
@@ -73,27 +70,27 @@ if (isset($_POST['register'])) {
                                 <div class="card-body p-5">
                                     <h2 class="text-uppercase text-center mb-5">Hesap Oluşturun</h2>
                                     <?= $error ?>
-                                    <div data-mdb-input-init class="form-outline mb-4">
-                                        <input  name="name" type="text" id="form3Example1cg" class="form-control form-control-lg" />
+                                    <div class="form-outline mb-4">
+                                        <input name="name" type="text" id="form3Example1cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example1cg">Adınız</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input  name="surname" name="surname" type="text" id="form3Example1cg" class="form-control form-control-lg" />
+                                        <input name="surname" name="surname" type="text" id="form3Example1cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example1cg">Soyadınız</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input  name="email" type="email" id="form3Example3cg" class="form-control form-control-lg" />
+                                        <input name="email" type="email" id="form3Example3cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example3cg">E-mailiniz</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input  name="userName" title="Kullanıcı adınızı giriniz." type="text" id="form3Example3cg" class="form-control form-control-lg" />
+                                        <input name="userName" title="Kullanıcı adınızı giriniz." type="text" id="form3Example3cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example3cg">Kullanıcı Adınız</label>
                                     </div>
                                     <div class="form-outline mb-4">
-                                        <input  name="userPassword" type="password" id="form3Example4cg" class="form-control form-control-lg" />
+                                        <input name="userPassword" type="password" id="form3Example4cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example4cg">Şifreniz</label>
                                     </div>
                                     <div class="d-flex justify-content-center">

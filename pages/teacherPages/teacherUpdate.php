@@ -16,26 +16,33 @@ $db = new Database();
 $db->startConnection($config);
 
 if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
+    $query = $db->getDatas('teacher', ['no', 'name', 'surname', 'userName'], ['no=?'], [$_GET['no']]);
+    $row = $query->fetch(PDO::FETCH_ASSOC);
+    if (!$row) {
+        echo "Böyle bir Öğretmen bulunmamaktadır.";
+        exit;
+    }
+    $error = '';
     if (isset($_POST['update'])) {
 
         $name = secure_data($_POST['name']);
         $surname = secure_data($_POST['surname']);
         $userName = secure_data($_POST['userName']);
 
-        $teacher = Teacher::updateTeacher($_GET['no'], $name, $surname, $userName, $db);
-        header("Location:../teacher.php");
+        if (empty($name) || empty($surname) || empty($userName)) {
+            $error = '<div class="alert alert-danger" role="alert">Lütfen boş alan bırakmayın.</div>';
+        } elseif (!validate_letter($name) || !validate_letter($surname)) {
+            $error = '<div class="alert alert-danger" role="alert">Ad ve soyad yalnızca harflerden oluşabilir.</div>';
+        } elseif (!validate_with_number($userName)) {
+            $error = '<div class="alert alert-danger" role="alert">Kullanıcı adı yalnızca harf ve sayılardan oluşabilir.</div>';
+        } else {
+            $teacher = Teacher::updateTeacher($_GET['no'], $name, $surname, $userName, $db);
+            header("Location:../teacher.php");
+            $db->closeConnection();
+        }
     }
-
-    $query = $db->getDatas('teacher', ['no', 'name', 'surname', 'userName'], ['no=?'], [$_GET['no']]);
-    $row = $query->fetch(PDO::FETCH_ASSOC);
-
-    if (!$row) {
-        echo "Böyle bir Öğretmen bulunmamaktadır.";
-        exit;
-    }
-    $db->closeConnection();
 } else {
-     echo "İşlem yapmak için yetkiniz bulunmamaktadır";
+    echo "İşlem yapmak için yetkiniz bulunmamaktadır";
     header("Location:../class.php");
 }
 ?>
@@ -59,6 +66,11 @@ if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
                     <div class="display-1 text-center">Öğretmen Güncelle </div>
                 </div>
             </div>
+            <?php if ($error) : ?>
+                <div>
+                    <?= $error ?>
+                </div>
+            <?php endif; ?>
             <div class="row">
                 <div class="col">
                     <div class="btn-group">

@@ -19,6 +19,7 @@ if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
         header("Location:./teacher.php");
     }
     $query = $db->getDatas('teacher', ['no', 'name', 'surname', 'email', 'userName', 'authorized']);
+    $db->closeConnection();
 } else {
     echo "Yetkiniz yok.";
     exit;

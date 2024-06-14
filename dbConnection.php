@@ -32,13 +32,9 @@ class Database
         $sth = $this->connection->prepare($sql);
         return $sth->execute(array_values($data));
     }
-
-
+         
     public function getDatas($table, $columns = [], $conditions = [], $params = [])
     {
-        if (is_string($columns)) {
-            $columns = explode(', ', $columns);
-        }
         if (empty($columns)) {
             $columnsList = '*';
         } else {
@@ -53,7 +49,6 @@ class Database
         $query->execute($params);
         return $query;
     }
-
 
     public function updateDatas($table, $no, $data = [])
     {

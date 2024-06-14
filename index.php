@@ -8,25 +8,25 @@ include "dbConnection.php";
 include "./autoload.php";
 include "./functions.php";
 $error = '';
+$uEmail = '';
 if (isset($_POST['loginButton'])) {
 
-  $uEmail =secure_data($_POST['uEmail']) ;
+  $uEmail = secure_data($_POST['uEmail']);
   $uPassword = secure_data(md5($_POST['uPassword']));
-
 
   $db = new Database();
   $db->startConnection($config);
-  $result = Teacher::login($uEmail,$uPassword,$db);
+  $result = Teacher::login($uEmail, $uPassword, $db, $error);
 
-  if ($result) {
+  if (!$result) {
+    $uEmail = $_POST['uEmail'];
+  } else {
     $_SESSION['loggedin'] = true;
     $_SESSION['user_name'] = $result['userName'];
     $_SESSION['user_auth'] = $result['authorized'];
     header("Location:./pages/class.php");
     $db->closeConnection();
     exit;
-  } else {
-   $error = 'E-posta veya şifre yanlış.';;
   }
 }
 ?>
@@ -58,7 +58,7 @@ if (isset($_POST['loginButton'])) {
                   <?php endif; ?>
                   <div class="form-outline form-white mb-4">
                     <label class="form-label" for="typeEmailX">E-posta</label>
-                    <input name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" />
+                    <input name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" value="<?= htmlspecialchars($uEmail) ?>" />
                   </div>
                   <div class="form-outline form-white mb-4">
                     <label class="form-label" for="typePasswordX">Şifre</label>

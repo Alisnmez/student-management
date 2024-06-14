@@ -16,32 +16,32 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 $db = new Database();
 $db->startConnection($config);
 
-$row = $db->getDatas('student', '*', ['no=?'], [$_GET['no']])->fetch(PDO::FETCH_ASSOC);
+$row = $db->getDatas('student', ['*'], ['no=?'], [$_GET['no']])->fetch(PDO::FETCH_ASSOC);
 
 if (!$row) {
     echo "Böyle bir öğrenci bulunamadı.";
     exit;
 }
-
 $updateMessage = '';
-
+$error = '';
 if (isset($_POST['update'])) {
     $name = secure_data($_POST['name']);
     $surname = secure_data($_POST['surname']);
     $class = secure_data($_POST['class']);
     $date = $_POST['date'];
-    $student = Student::updateStudent($db, $name, $surname, $class, $date, $_GET['no']);
-
-    if (!validate_letter($name) || !validate_letter($surname)) {
-        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad sadece harf içermelidir.</div>';
+    if(empty($name) || empty($surname) || empty($class) || empty($date)){
+        $error = '<div class="alert alert-danger" role="alert">Lütfen boş alan bırakmayın.</div>';
+    }
+    elseif (!validate_letter($name) || !validate_letter($surname)) {
+        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad yalnızca harflerden oluşabilir.</div>';
     } elseif (!validate_with_number($class)) {
-        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad sadece harf içermelidir.</div>';
+        $error = '<div class="alert alert-danger" role="alert">Sınıf yalnızca harf ve sayılardan oluşabili.</div>';
     } else {
         $student = Student::updateStudent($db, $name, $surname, $class, $date, $_GET['no']);
         if ($student) {
             $updateMessage = "Öğrenci başarılı şekilde güncellendi.";
         } else {
-            $updateMessage = "Güncelleme sırasında bir hata oluştu.";
+            $updateMessage = "Güncelleme sırasında hata oluştu.";
         }
     }
 }
@@ -80,6 +80,11 @@ if (isset($_POST['update'])) {
             <?php if ($updateMessage) : ?>
                 <div class="alert alert-info">
                     <?= $updateMessage ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($error) : ?>
+                <div>
+                    <?= $error ?>
                 </div>
             <?php endif; ?>
             <form action="" method="post" class="row">

@@ -15,12 +15,13 @@ $db->startConnection($config);
 if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
     $query = $db->getDatas('teacher',['no','name','userName','authorized'],['no=?'], [$_GET['no']]);
     $row = $query->fetch(PDO::FETCH_ASSOC);
+    
     if(isset($_POST['updateAuth'])){
         $newAuth = $_POST['authorized'];
         $db->updateDatas('teacher',$_GET['no'],['authorized'=>$newAuth]);
         header("Location:../teacher.php");
+        $db->closeConnection();
     }
-
     if (!$row) {
         echo "Böyle bir Öğretmen bulunmamaktadır";
         exit;
