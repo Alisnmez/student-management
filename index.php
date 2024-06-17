@@ -16,8 +16,9 @@ if (isset($_POST['loginButton'])) {
 
   $db = new Database();
   $db->startConnection($config);
-  $result = Teacher::login($uEmail, $uPassword, $db, $error);
 
+  $teacher = new Teacher($db);
+  $result = $teacher->login($uEmail,$uPassword,$error);
   if (!$result) {
     $uEmail = $_POST['uEmail'];
   } else {

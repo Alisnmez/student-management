@@ -28,15 +28,13 @@ if (isset($_POST['register'])) {
         $error = '<div class="alert alert-danger" role="alert">Kullanıcı adı yalnızca harf ve sayı içermelidir.</div>';
     } else {
 
-        $teacher = new Teacher($db);
-        $result = $teacher->saveTeacher(
-            $name,
-            $surname,
-            $email,
-            $userName,
-            $userPassword,
-            $db
-        );
+        $teacher = new Teacher($db); 
+        $teacher->name = $name;
+        $teacher->surname = $surname;
+        $teacher->email = $email;
+        $teacher->userName = $userName;
+        $teacher->userPassword = $userPassword;
+        $result = $teacher->saveTeacher();
         if ($result) {
             echo '<div class="alert alert-success" role="alert">Kayıt başarıyla eklendi.</div>';
             echo '<meta http-equiv="refresh" content="2;url=' . $_SERVER['PHP_SELF'] . '">';

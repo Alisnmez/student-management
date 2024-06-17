@@ -36,7 +36,11 @@ if (isset($_SESSION['user_auth']) && $_SESSION['user_auth'] == 1) {
         } elseif (!validate_with_number($userName)) {
             $error = '<div class="alert alert-danger" role="alert">Kullanıcı adı yalnızca harf ve sayılardan oluşabilir.</div>';
         } else {
-            $teacher = Teacher::updateTeacher($_GET['no'], $name, $surname, $userName, $db);
+            $teacher = new Teacher($db,$_GET['no']);
+            $teacher->name = $name;
+            $teacher->surname = $surname;
+            $teacher->userName = $userName;
+            $teacher->updateTeacher();
             header("Location:../teacher.php");
             $db->closeConnection();
         }

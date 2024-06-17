@@ -37,8 +37,14 @@ if (isset($_POST['update'])) {
     } elseif (!validate_with_number($class)) {
         $error = '<div class="alert alert-danger" role="alert">Sınıf yalnızca harf ve sayılardan oluşabili.</div>';
     } else {
-        $student = Student::updateStudent($db, $name, $surname, $class, $date, $_GET['no']);
-        if ($student) {
+        $student = new Student($db,$_GET['no']);
+        $student->name = $name;
+        $student->surname = $surname;
+        $student->class = $class;
+        $student->date = $date;
+        $result = $student->updateStudent();
+
+        if ($result) {
             $updateMessage = "Öğrenci başarılı şekilde güncellendi.";
         } else {
             $updateMessage = "Güncelleme sırasında hata oluştu.";

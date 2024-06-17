@@ -15,6 +15,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 }
 $db = new Database();
 $db->startConnection($config);
+
 if (isset($_GET['delete'])) {
     $query = $db->deleteDatas('student', $_GET['delete']);
     header('Location:class.php');
@@ -88,7 +89,7 @@ if (isset($_POST['search'])) {
                     <table class="table table-hover table-dark table-striped">
                         <thead>
                             <tr>
-                                <th>NO</th>
+                                <th>No</th>
                                 <th>Ad</th>
                                 <th>Soyad</th>
                                 <th>Sınıf</th>

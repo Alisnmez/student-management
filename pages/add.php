@@ -32,7 +32,13 @@ if (isset($_POST["save"])) {
     }elseif(!validate_with_number($class)){
         $error = '<div class="alert alert-danger" role="alert">Sınıf sadece sayı ve harf içermelidir.</div>';
     } else {
-        $query = Student::addStudent($db, $name, $surname, $class, $date, $gender);
+        $student = new Student($db);
+        $student->name = $name;
+        $student->surname = $surname;
+        $student->class = $class;
+        $student->date = $date;
+        $student->gender = $gender;
+        $query = $student->addStudent();
         if (!$query) {
             echo "Öğrenci eklenemedi";
             exit;
