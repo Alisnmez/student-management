@@ -22,7 +22,6 @@ class Database
     public function closeConnection()
     {
         $this->connection = null;
-        echo "Veritabanı bağlantısı kapatıldı.";
     }
     public function save($table, $data = [])
     {
@@ -33,7 +32,7 @@ class Database
         return $sth->execute(array_values($data));
     }
          
-    public function getDatas($table, $columns = [], $conditions = [], $params = [])
+    public function getDatas($table, $columns = [], $conditions = [], $values = [])
     {
         if (empty($columns)) {
             $columnsList = '*';
@@ -46,7 +45,7 @@ class Database
             $sql .= " WHERE " . implode(' AND ', $conditions);
         }
         $query = $this->connection->prepare($sql);
-        $query->execute($params);
+        $query->execute($values);
         return $query;
     }
 

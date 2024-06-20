@@ -6,7 +6,7 @@ include "../dbConnection.php";
 include_once "../autoload.php";
 require_once "../functions.php";
 
-$error = '';
+$errors = [];
 $db = new Database();
 $db->startConnection($config);
 
@@ -16,31 +16,38 @@ if (isset($_POST['register'])) {
     $surname = secure_data($_POST['surname']);
     $email = filter_var(secure_data($_POST['email']), FILTER_SANITIZE_EMAIL);
     $userName = secure_data($_POST['userName']);
-    $userPassword = secure_data(md5($_POST['userPassword']));
+    $userPassword = secure_data($_POST['userPassword']);
 
     if (empty($name) || empty($surname) || empty($email) || empty($userName) || empty($userPassword)) {
-        $error = '<div class="alert alert-danger" role="alert">Lütfen tüm alanları doldurun.</div>';
-    } elseif (strlen($userPassword) < 6 || !validate_with_number($userPassword)) {
-        $error = '<div class="alert alert-danger" role="alert">Şifre en az 6 karakter olmalıdır ve yalnızca harf ve sayı içermelidir.</div>';
-    } elseif (!validate_letter($name) || !validate_letter($surname)) {
-        $error = '<div class="alert alert-danger" role="alert">Ad ve soyad yalnızca harf içermelidir.</div>';
-    } elseif (!validate_with_number($userName)) {
-        $error = '<div class="alert alert-danger" role="alert">Kullanıcı adı yalnızca harf ve sayı içermelidir.</div>';
-    } else {
+        $errors[] = 'Lütfen tüm alanları doldurun.';
+    }
 
+    if (strlen($userPassword) < 6 || !validate_with_number($userPassword)) {
+        $errors[] = 'Şifre en az 6 karakter olmalıdır ve yalnızca harf ve sayı içermelidir.';
+    }
+
+    if (!validate_letter($name) || !validate_letter($surname)) {
+        $errors[] = 'Ad ve soyad yalnızca harf içermelidir.';
+    }
+
+    if (!validate_with_number($userName)) {
+        $errors[] = 'Kullanıcı adı yalnızca harf ve sayı içermelidir.';
+    }
+
+    if (empty($errors)) {
         $teacher = new Teacher($db); 
         $teacher->name = $name;
         $teacher->surname = $surname;
         $teacher->email = $email;
         $teacher->userName = $userName;
-        $teacher->userPassword = $userPassword;
+        $teacher->userPassword = secure_data(md5($userPassword)); 
         $result = $teacher->saveTeacher();
         if ($result) {
             echo '<div class="alert alert-success" role="alert">Kayıt başarıyla eklendi.</div>';
             echo '<meta http-equiv="refresh" content="2;url=' . $_SERVER['PHP_SELF'] . '">';
             $db->closeConnection();
         } else {
-            echo '<div class="alert alert-danger" role="alert">Kayıt eklenirken bir hata oluştu.</div>';
+            $errors[] = '';
         }
     }
 }
@@ -67,28 +74,32 @@ if (isset($_POST['register'])) {
                             <div class="card" style="border-radius: 15px;">
                                 <div class="card-body p-5">
                                     <h2 class="text-uppercase text-center mb-5">Hesap Oluşturun</h2>
-                                    <?= $error ?>
+                                    <?php if (!empty($errors)) { ?>
+                                        <?php foreach ($errors as $error) { ?>
+                                            <div class="alert alert-danger" role="alert"><?= htmlspecialchars($error) ?></div>
+                                        <?php } ?>
+                                    <?php } ?>
                                     <div class="form-outline mb-4">
-                                        <input name="name" type="text" id="form3Example1cg" class="form-control form-control-lg" />
+                                        <input require name="name" type="text" id="form3Example1cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example1cg">Adınız</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input name="surname" name="surname" type="text" id="form3Example1cg" class="form-control form-control-lg" />
+                                        <input require name="surname" type="text" id="form3Example1cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example1cg">Soyadınız</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input name="email" type="email" id="form3Example3cg" class="form-control form-control-lg" />
+                                        <input require name="email" type="email" id="form3Example3cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example3cg">E-mailiniz</label>
                                     </div>
 
                                     <div class="form-outline mb-4">
-                                        <input name="userName" title="Kullanıcı adınızı giriniz." type="text" id="form3Example3cg" class="form-control form-control-lg" />
+                                        <input require name="userName" title="Kullanıcı adınızı giriniz." type="text" id="form3Example3cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example3cg">Kullanıcı Adınız</label>
                                     </div>
                                     <div class="form-outline mb-4">
-                                        <input name="userPassword" type="password" id="form3Example4cg" class="form-control form-control-lg" />
+                                        <input require name="userPassword" type="password" id="form3Example4cg" class="form-control form-control-lg" />
                                         <label class="form-label" for="form3Example4cg">Şifreniz</label>
                                     </div>
                                     <div class="d-flex justify-content-center">

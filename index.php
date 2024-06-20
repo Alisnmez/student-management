@@ -59,11 +59,11 @@ if (isset($_POST['loginButton'])) {
                   <?php endif; ?>
                   <div class="form-outline form-white mb-4">
                     <label class="form-label" for="typeEmailX">E-posta</label>
-                    <input name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" value="<?= htmlspecialchars($uEmail) ?>" />
+                    <input require name="uEmail" type="email" id="typeEmailX" class="form-control form-control-lg" placeholder="E-posta Giriniz" value="<?= htmlspecialchars($uEmail) ?>" />
                   </div>
                   <div class="form-outline form-white mb-4">
                     <label class="form-label" for="typePasswordX">Şifre</label>
-                    <input name="uPassword" type="password" id="typePasswordX" class="form-control form-control-lg" placeholder="Şifrenizi Giriniz" />
+                    <input require name="uPassword" type="password" id="typePasswordX" class="form-control form-control-lg" placeholder="Şifrenizi Giriniz" />
                   </div>
                   <button name="loginButton" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-light btn-lg px-5" type="submit">Giriş</button>
                 </div>
